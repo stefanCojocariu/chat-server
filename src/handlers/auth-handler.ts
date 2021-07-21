@@ -1,4 +1,6 @@
 import { Request, Response } from 'express';
+import { isBuffer } from 'util';
+import { IUser, UserObj } from '../models/user';
 import AuthRepository from '../repositories/auth-repository';
 
 class AuthHandler {
@@ -9,8 +11,13 @@ class AuthHandler {
     }
 
     async register(req: Request, res: Response) {
+        let userObj:UserObj = {
+            name: req.body.name,
+            username: req.body.username,
+            password: req.body.password
+        }
         try {
-            const user = await this.authRepository.register();
+            const user = await this.authRepository.register(userObj);
             res.status(200).json({ data: user });
         } catch (error) {
             console.log(error);

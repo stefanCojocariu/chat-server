@@ -1,5 +1,6 @@
+import { AnyNaptrRecord } from "dns";
 import MongoDB from "../configs/mongo-db";
-import User, { IUser } from "../models/user";
+import User, { IUser, UserObj } from "../models/user";
 
 class AuthRepository {
     private mongoDb: MongoDB;
@@ -8,13 +9,30 @@ class AuthRepository {
         this.mongoDb = new MongoDB();
     }
 
-    register(): Promise<IUser> {
+    register(userObj:UserObj): Promise<IUser> {
         return new Promise(
             async (resolve, reject) => {
                 try {
-                    const newUser = await User.create({ name: 'Stefan Cojocariu', username: 'stefan.cojocariu'});
+                    let newUserObj;
+                    if (!userObj) {
+                        newUserObj = {
+                            name: 'Stefan Cojocariu',
+                            username: 'stefan.cojocariu',
+                            password: '1234'
+                        }
+                    } else {
+                        newUserObj = userObj
+                    }
+
+                    const findOne = await User.findOne({username: newUserObj.username})
+                    if(findOne){
+                        reject('username unavailable');
+                        return;
+                    }
+                    const newUser = await User.create(newUserObj);
+
                     const user = await newUser.save();
-                    
+
                     resolve(user);
                 } catch (error) {
                     reject(error);
