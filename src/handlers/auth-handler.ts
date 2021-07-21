@@ -26,6 +26,19 @@ class AuthHandler {
         }
     }
 
+    // async login(req: Request, res: Response) {
+    //     const userObj:IUser = req.body
+    //     try {
+    //         const user = await this.authRepository.login(userObj);
+    //         // res.status(200).json({ data: user });
+    //         res.status(200).json(this.apiResponse.format(user));
+    //     } catch (error) {
+    //         console.log(error);
+    //         // res.status(500).json({ error });
+    //         res.status(500).json(this.apiResponse.format(null, error));
+    //     }
+    // }
+
     async getUsers(req: Request, res: Response) {
         try {
             const users = await this.authRepository.getUsers();

@@ -1,26 +1,19 @@
 import moongose from 'mongoose';
+import Validators from '../utils/validators';
+import uniqueValidator from 'mongoose-unique-validator';
 
 const Schema = moongose.Schema;
+const validators = new Validators();
 
 export interface IUser extends moongose.Document {
     name: string,
     username: string,
-    password:string,
+    password: string,
     email: string,
     date: string,
     isOnline: boolean,
     socketId: string
 };
-
-let validateEmail = function(email:string) {
-    var re = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-    return re.test(email)
-};
-
-let validateUsername = function(username:string){
-    var re = /^[a-z0-9_\.]+$/;
-    return re.test(username);
-}
 
 const UserSchema = new Schema({
     name: {
@@ -31,17 +24,20 @@ const UserSchema = new Schema({
         trim: true,
         lowercase: true,
         required: 'Username is required',
-        validate: [validateUsername, 'Please fill a valid username (alphanumeric + "_" + ".")']
+        unique: true,
+        validate: [validators.validateUsername, 'Please fill a valid username (alphanumeric + "_" + ".")']
     },
     password: {
         type: String,
+        required: 'Password is required',
     },
     email: {
         type: String,
         trim: true,
         lowercase: true,
         required: 'Email address is required',
-        validate: [validateEmail, 'Please fill a valid email address']
+        unique: true,
+        validate: [validators.validateEmail, 'Please fill a valid email address']
     },
     date: {
         type: String,
@@ -53,6 +49,7 @@ const UserSchema = new Schema({
     }
 }, { collection: 'User' });
 
+UserSchema.plugin(uniqueValidator);
 const User = moongose.model<IUser>('User', UserSchema);
 
 export default User;
