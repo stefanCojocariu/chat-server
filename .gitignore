@@ -76,4 +76,5 @@ typings/
 .fusebox/
 
 #package lock file
+.DS_STORE
 package-lock.json
