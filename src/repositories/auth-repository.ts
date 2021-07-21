@@ -2,14 +2,40 @@ import { AnyNaptrRecord } from "dns";
 import MongoDB from "../configs/mongo-db";
 import User, { IUser } from "../models/user";
 import bcrypt from 'bcrypt';
+import Validators from '../utils/validators';
+import JWTHelper, { Tokens } from '../utils/jwt-helper'
+import Session from '../models/session'
 
 class AuthRepository {
-    register(userObj:IUser): Promise<IUser> {
+    private validators: Validators;
+    private jwtHelper: JWTHelper;
+    constructor() {
+        this.validators = new Validators();
+        this.jwtHelper = new JWTHelper();
+    }
+    authorization() { }
+    private generateNewTokens(userObj: IUser): Promise<Tokens> {
+        return new Promise(
+            async (resolve, reject) => {
+                try {
+                    const accessToken = await this.jwtHelper.signAccessToken(userObj);
+                    const refreshToken = await this.jwtHelper.signRefreshToken(userObj);
+
+                    resolve({ accessToken: accessToken, refreshToken: refreshToken });
+                }
+                catch (err) {
+                    reject(err);
+                }
+            }
+        )
+     }
+    private getRefreshTokenByUserId() { }
+    register(userObj: IUser): Promise<IUser> {
         return new Promise(
             async (resolve, reject) => {
                 try {
                     //encrypt password
-                    const saltRounds = 10;
+                    const saltRounds = 3;
                     const passHash = await bcrypt.hash(userObj.password, saltRounds);
                     userObj.password = passHash;
                     const newUser = await User.create(userObj);
@@ -22,6 +48,49 @@ class AuthRepository {
                 }
             }
         );
+    }
+
+    login(userObj: IUser): Promise<Tokens> {
+        return new Promise(
+            async (resolve, reject) => {
+                try {
+                    //check user/pass combination
+                    const users = await User.find({ username: userObj.username });
+                    if (!users) {
+                        reject('Username / Email or Password is invalid');
+                        return;
+                    }
+
+                    if (users.length != 1) {
+                        reject('Bad boo boo');
+                        return;
+                    }
+
+                    const hashPass = users[0].password;
+                    var compare = await bcrypt.compare(userObj.password, hashPass);
+                    if (!compare) {
+                        reject('Username / Email or Password is invalid');
+                        return;
+                    }
+
+                    //generate AccessToken / RefreshToken
+                    const tokens = await this.generateNewTokens(userObj);
+                    //insert new session for user
+                    const newSession = await Session.create(
+                        {
+                            user: users[0]._id,
+                            refreshToken: tokens.refreshToken,
+                        }
+                    );
+                    const session = await newSession.save();
+                    console.log(session);
+                    resolve(tokens);
+
+                } catch (error) {
+                    reject(error);
+                }
+            }
+        )
     }
 
     getUsers(): Promise<IUser[]> {
