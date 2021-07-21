@@ -24,8 +24,13 @@ class AuthRepository {
                         newUserObj = userObj
                     }
 
-                    const findOne = await User.findOne({username: newUserObj.username})
-                    if(findOne){
+                    const findOneByEmail = await User.findOne({email: newUserObj.email});
+                    if(findOneByEmail){
+                        reject('email already used');
+                        return;
+                    }
+                    const findOneByName = await User.findOne({username: newUserObj.username});
+                    if(findOneByName){
                         reject('username unavailable');
                         return;
                     }

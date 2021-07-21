@@ -6,6 +6,7 @@ export interface IUser extends moongose.Document {
     name: string,
     username: string,
     password:string,
+    emai: string,
     date: string
 };
 
@@ -13,6 +14,7 @@ export interface UserObj {
     name: string,
     username: string,
     password:string,
+    email:string,
     date?: string
 }
 
@@ -24,6 +26,9 @@ const UserSchema = new Schema({
         type: String,
     },
     password: {
+        type: String,
+    },
+    email: {
         type: String,
     },
     date: {

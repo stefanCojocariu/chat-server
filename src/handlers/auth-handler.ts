@@ -14,6 +14,7 @@ class AuthHandler {
         let userObj:UserObj = {
             name: req.body.name,
             username: req.body.username,
+            email: req.body.email,
             password: req.body.password
         }
         try {
