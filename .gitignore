@@ -74,6 +74,8 @@ typings/
 
 # FuseBox cache
 .fusebox/
+
+#package lock file
 .DS_STORE
 package-lock.json
 .env

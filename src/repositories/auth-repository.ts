@@ -3,12 +3,6 @@ import MongoDB from "../configs/mongo-db";
 import User, { IUser } from "../models/user";
 
 class AuthRepository {
-    private mongoDb: MongoDB;
-
-    constructor() {
-        this.mongoDb = new MongoDB();
-    }
-
     register(userObj:IUser): Promise<IUser> {
         return new Promise(
             async (resolve, reject) => {
