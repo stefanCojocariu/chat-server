@@ -18,7 +18,6 @@ class JWTHelper {
                         reject('no jwt secret');
                         return;
                     }
-                    console.log(process.env.ACCESS_TOKEN_EXPIRESIN);
                     const signOptions = {
                         expiresIn: process.env.ACCESS_TOKEN_EXPIRESIN,
                         audience: userObj.username
@@ -38,14 +37,14 @@ class JWTHelper {
             async (resolve, reject) => {
                 try{
                     const payload = userObj;
-                    const secret = process.env.ACCESS_TOKEN_SECRET;
+                    const secret = process.env.REFRESH_TOKEN_SECRET;
                     if (!secret) {
                         reject('no jwt secret');
                         return;
                     }
-                    console.log(process.env.ACCESS_TOKEN_EXPIRESIN);
+                    //!!!!! WILL BE ALWAYS THE SAME - EPIRES IN SHOW TAKE CURRENT DATE + env variable
                     const signOptions = {
-                        expiresIn: process.env.ACCESS_TOKEN_EXPIRESIN,
+                        expiresIn: process.env.REFRESH_TOKEN_EXPIRESIN,
                         audience: userObj.username
                     };
     
