@@ -5,7 +5,9 @@ const Schema = moongose.Schema;
 export interface IUser extends moongose.Document {
     name: string,
     username: string,
-    date: string
+    date: string,
+    isOnline: boolean,
+    socketId: string
 };
 
 const UserSchema = new Schema({
@@ -18,6 +20,9 @@ const UserSchema = new Schema({
     date: {
         type: String,
         default: Date.now,
+    },
+    isOnline: {
+        type: Boolean
     }
 }, { collection: 'User' });
 
