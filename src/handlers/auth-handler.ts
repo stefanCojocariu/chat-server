@@ -8,7 +8,7 @@ class AuthHandler {
         this.authRepository = new AuthRepository();
     }
 
-    async signIn(req: Request, res: Response) {
+    async register(req: Request, res: Response) {
         try {
             const user = await this.authRepository.register();
             res.status(200).json({ data: user });
