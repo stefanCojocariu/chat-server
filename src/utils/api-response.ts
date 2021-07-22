@@ -1,9 +1,21 @@
-interface SuccessResponse {
-    data: any
+class SuccessResponse {
+    isSuccess: boolean;
+    data: any;
+
+    constructor(data:any){
+        this.isSuccess = true;
+        this.data = data;
+    }
 };
 
-interface ErrorResponse {
-    error: string
+class ErrorResponse {
+    isSuccess: boolean;
+    error: string;
+
+    constructor(error:string){
+        this.isSuccess = false;
+        this.error = error;
+    }
 }
 
 class ApiResponse {
@@ -11,7 +23,7 @@ class ApiResponse {
     }
 
     format(data: any, error?: string): SuccessResponse | ErrorResponse {
-        return error ? { error } : { data };
+        return error ? new ErrorResponse(error) :  new SuccessResponse(data);
     }
 }
 

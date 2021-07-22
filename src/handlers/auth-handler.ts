@@ -29,11 +29,9 @@ class AuthHandler {
         const userObj: IUser = req.body;
         try {
             const user = await this.authRepository.register(userObj);
-            // res.status(200).json({ data: user });
             res.status(200).json(this.apiResponse.format(user));
         } catch (error) {
             console.log(error);
-            // res.status(500).json({ error });
             res.status(500).json(this.apiResponse.format(null, error));
         }
     }
