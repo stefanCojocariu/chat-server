@@ -4,7 +4,7 @@ import User, { IUser } from "../models/user";
 import bcrypt from 'bcrypt';
 import Validators from '../utils/validators';
 import JWTHelper, { Tokens } from '../utils/jwt-helper'
-import Session from '../models/session'
+import Session, { ISession } from '../models/session'
 
 class AuthRepository {
     private validators: Validators;
@@ -29,7 +29,23 @@ class AuthRepository {
             }
         )
      }
-    private getRefreshTokenByUserId() { }
+    private getRefreshTokenByUserId(userObj:IUser) : Promise<string> {
+        let func = async (resolve:any, reject:any) => {
+            try{
+                const session:ISession[] = await Session.find({user: userObj._id})
+                if(!session){
+                    reject ('No session found');
+                    return;
+                }
+
+                resolve(session[0].refreshToken)
+            }catch(error){
+                reject(error)
+            }
+        }
+
+        return new Promise<string>(func);
+    }
     register(userObj: IUser): Promise<IUser> {
         return new Promise(
             async (resolve, reject) => {

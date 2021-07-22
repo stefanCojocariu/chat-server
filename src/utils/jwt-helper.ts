@@ -23,7 +23,7 @@ class JWTHelper {
                         audience: userObj.username
                     };
     
-                    var accessToken = await JWT.sign(payload, secret, signOptions);
+                    const accessToken = await JWT.sign(payload, secret, signOptions);
                     resolve(accessToken);
                 } catch (error) {
                     reject(error);
@@ -48,8 +48,8 @@ class JWTHelper {
                         audience: userObj.username
                     };
     
-                    var accessToken = await JWT.sign(payload, secret, signOptions);
-                    resolve(accessToken);
+                    const refreshToken = await JWT.sign(payload, secret, signOptions);
+                    resolve(refreshToken);
                 } catch (error) {
                     reject(error);
                 }
