@@ -22,7 +22,7 @@ export default class ChatRoutes {
         this.router.get('/onlineUsers', (req: Request, res: Response) => { 
             this.chatHandler.getOnlineUsers(req, res);
         });
-
+        
         this.router.post('/getConversationMessages', (req: Request, res: Response) => { 
             this.chatHandler.getConversationMessages(req, res);
         });

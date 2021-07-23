@@ -46,6 +46,9 @@ const UserSchema = new Schema({
     isOnline: {
         type: Boolean,
         default: false
+    },
+    socketId: {
+        type: String
     }
 }, { collection: 'User' });
 

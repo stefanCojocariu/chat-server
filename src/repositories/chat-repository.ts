@@ -1,61 +1,31 @@
-import { ObjectId } from "mongoose";
+import { ObjectId, Types } from "mongoose";
 import Conversation, { IConversation } from "../models/conversation";
 import Message, { IMessage } from "../models/message";
 import User, { IUser } from "../models/user";
 
 class ChatRepository {
-    insertConversation(members: ObjectId[]): Promise<IConversation> {
-        return new Promise(
-            async (resolve, reject) => {
-                try {
-                    const conversation = await Conversation.create({members, lastMessage: ''});
-                    resolve(conversation);
-                }
-                catch (error) {
-                    reject(error);
-                }
-            }
-        );
+    async insertConversation(members: ObjectId[]): Promise<IConversation> {
+        return await Conversation.create({ members, lastMessage: '' });
     }
 
-    insertMessage(message: IMessage): Promise<IMessage> {
-        return new Promise(
-            async (resolve, reject) => {
-                try {
-                    const insertedMessage = await Message.create(message);
-                    resolve(insertedMessage);
-                }
-                catch (error) {
-                    reject(error);
-                }
-            }
-        );
+    async insertMessage(message: IMessage): Promise<IMessage> {
+        return await Message.create(message);
     }
 
-    getOnlineUsers(): Promise<IUser[]> {
-        return new Promise(
-            async (resolve, reject) => {
-                try {
-                    const onlineUsers = await User.find({ isOnline: true });
-                    resolve(onlineUsers);
-                } catch (error) {
-                    reject(error);
-                }
-            }
-        );
+    async getOnlineUsers(): Promise<IUser[]> {
+        return await User.find({ isOnline: true });
     }
 
-    getConversationMessages(conversationId: ObjectId): Promise<IMessage[]> {
-        return new Promise(
-            async (resolve, reject) => {
-                try {
-                    const messages = await Message.find({ conversationId });
-                    resolve(messages);
-                } catch (error) {
-                    reject(error);
-                }
-            }
-        );
+    async getConversationMessages(conversationId: ObjectId): Promise<IMessage | null> {
+        return await Message.findById({ conversationId });
+    }
+
+    async getUserInfo(userId: string, projection: any): Promise<IUser | null> {
+        return await User.findById(userId, projection);
+    }
+
+    async addSocket(userId: string | string[], socketId: string): Promise<IUser | null> {
+        return await User.findByIdAndUpdate(userId, { socketId });
     }
 }
 
