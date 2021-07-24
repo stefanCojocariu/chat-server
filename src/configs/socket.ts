@@ -4,7 +4,7 @@ import { IMessage } from '../models/message';
 import ChatRepository from '../repositories/chat-repository';
 import ApiResponse from '../utils/api-response';
 import * as http from 'http';
-import error from '../configs/error.constants';
+import errorConstants from '../configs/error.constants';
 import AuthRepository from '../repositories/auth-repository';
 
 class Socket {
@@ -39,7 +39,7 @@ class Socket {
                     next();
                 }
                 else {
-                    next(new Error(error.AUTHORIZATION_ERROR));
+                    next(new Error(errorConstants.AUTHORIZATION_ERROR));
                 }
             } catch (error) {
                 console.error(error);
@@ -56,21 +56,21 @@ class Socket {
         if (data.body === '') {
             this.io.to(socketId).emit('add-message-response', {
                 isSuccess: true,
-                message: error.MESSAGE_NOT_FOUND
+                message: errorConstants.MESSAGE_NOT_FOUND
             });
             return;
         }
         if (data.from.toString() === '') {
             this.io.to(socketId).emit('add-message-response', {
                 isSuccess: true,
-                message: error.FROMID_NOT_FOUND
+                message: errorConstants.FROMID_NOT_FOUND
             });
             return;
         }
         if (data.to.toString() === '') {
             this.io.to(socketId).emit('add-message-response', {
                 isSuccess: true,
-                message: error.TOID_NOT_FOUND
+                message: errorConstants.TOID_NOT_FOUND
             });
             return;
         }
@@ -87,13 +87,13 @@ class Socket {
             else {
                 this.io.to(socketId).emit('add-message-response', {
                     isSuccess: false,
-                    message: error.SERVER_ERROR
+                    message: errorConstants.SERVER_ERROR
                 });
             }
         } catch (error) {
             this.io.to(socketId).emit('add-message-response', {
                 isSuccess: false,
-                message: error.SERVER_ERROR
+                message: errorConstants.SERVER_ERROR
             });
         }
     }

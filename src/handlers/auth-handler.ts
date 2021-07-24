@@ -32,8 +32,11 @@ class AuthHandler {
             res.cookie("refresh_token", tokens.refreshToken, this.refreshToken_cookieOptions);
             next();
         } catch (error) {
+            res.clearCookie("access_token");
+            res.clearCookie("refresh_token");
+            console.log('handler');
             console.log(error);
-            res.status(500).json(this.apiResponse.format(null, error));
+            res.status(200).json(this.apiResponse.format(null, error));
         }
     }
 
@@ -44,7 +47,7 @@ class AuthHandler {
             res.status(200).json(this.apiResponse.format(user));
         } catch (error) {
             console.log(error);
-            res.status(500).json(this.apiResponse.format(null, error));
+            res.status(200).json(this.apiResponse.format(null, error));
         }
     }
 
@@ -56,7 +59,7 @@ class AuthHandler {
             res.cookie("refresh_token", tokens.refreshToken, this.refreshToken_cookieOptions);
             res.status(200).json(this.apiResponse.format('OK'));
         } catch (error) {
-            res.status(500).json(this.apiResponse.format(null, error));
+            res.status(200).json(this.apiResponse.format(null, error));
         }
     }
 
@@ -76,7 +79,7 @@ class AuthHandler {
             res.status(200).json(this.apiResponse.format(users));
         } catch (error) {
             console.log(error);
-            res.status(500).json(this.apiResponse.format(null, error));
+            res.status(200).json(this.apiResponse.format(null, error));
         }
     }
 }

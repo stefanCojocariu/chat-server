@@ -20,11 +20,11 @@ class ChatHandler {
                 const conversation = await this.chatRepository.insertConversation(members);
                 res.status(200).json(this.apiResponse.format(conversation));
             } catch (error) {
-                res.status(500).json(this.apiResponse.format(null, error));
+                res.status(200).json(this.apiResponse.format(null, error));
             }
         }
         else {
-            res.status(400).json(this.apiResponse.format(null, 'Missing members of conversation in body.'));
+            res.status(200).json(this.apiResponse.format(null, 'Missing members of conversation in body.'));
         }
     }
 
@@ -35,11 +35,11 @@ class ChatHandler {
                 const insertMessage = await this.chatRepository.insertMessage(message);
                 res.status(200).json(this.apiResponse.format(insertMessage));
             } catch (error) {
-                res.status(500).json(this.apiResponse.format(null, error));
+                res.status(200).json(this.apiResponse.format(null, error));
             }
         }
         else {
-            res.status(400).json(this.apiResponse.format(null, 'Missing message in body.'));
+            res.status(200).json(this.apiResponse.format(null, 'Missing message in body.'));
         }
     }
 
@@ -48,7 +48,7 @@ class ChatHandler {
             const onlineUsers = await this.chatRepository.getOnlineUsers();
             res.status(200).json(this.apiResponse.format(onlineUsers));
         } catch (error) {
-            res.status(500).json(this.apiResponse.format(null, error));
+            res.status(200).json(this.apiResponse.format(null, error));
         }
     }
 
@@ -59,11 +59,11 @@ class ChatHandler {
                 const conversationMessages = await this.chatRepository.getConversationMessages(conversationId);
                 res.status(200).json(this.apiResponse.format(conversationMessages));
             } catch (error) {
-                res.status(500).json(this.apiResponse.format(null, error));
+                res.status(200).json(this.apiResponse.format(null, error));
             }
         }
         else {
-            res.status(400).json(this.apiResponse.format(null, 'Missing conversationId in body.'));
+            res.status(200).json(this.apiResponse.format(null, 'Missing conversationId in body.'));
         }
     }
 }
