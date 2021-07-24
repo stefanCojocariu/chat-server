@@ -21,12 +21,12 @@ class AuthHandler {
         this.authRepository = new AuthRepository();
         this.apiResponse = new ApiResponse();
     }
-
+    
     async authorization(req: Request, res: Response, next: NextFunction) {
         const accessToken = req.cookies.access_token;
         const refreshToken = req.cookies.refresh_token;
         try {
-            const tokens = await this.authRepository.authorization(accessToken, refreshToken);
+            const [tokens, _] = await this.authRepository.authorization(accessToken, refreshToken);
 
             res.cookie("access_token", tokens.accessToken, this.accessToken_cookieOptions);
             res.cookie("refresh_token", tokens.refreshToken, this.refreshToken_cookieOptions);
@@ -34,7 +34,6 @@ class AuthHandler {
         } catch (error) {
             res.clearCookie("access_token");
             res.clearCookie("refresh_token");
-            console.log('handler');
             console.log(error);
             res.status(200).json(this.apiResponse.format(null, error));
         }

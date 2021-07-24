@@ -21,7 +21,7 @@ class ChatRepository {
     }
 
     async addSocket(userId: string | string[], socketId: string): Promise<IUser | null> {
-        return await User.findByIdAndUpdate(userId, { socketId });
+        return await User.findByIdAndUpdate(userId, { socketId, isOnline: true });
     }
 }
 

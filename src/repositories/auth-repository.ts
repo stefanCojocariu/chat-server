@@ -15,20 +15,19 @@ class AuthRepository {
         this.jwtHelper = new JWTHelper();
     }
 
-    async authorization(accessToken: string, refreshToken: string): Promise<Tokens> {
-        console.log(accessToken, refreshToken);
+    async authorization(accessToken: string, refreshToken: string): Promise<[Tokens, string]> {
         // trycatch to verify if access token expired
         try {
-            await this.jwtHelper.verifyAccessToken(accessToken) as JwtPayload;
+            const payload = await this.jwtHelper.verifyAccessToken(accessToken) as JwtPayload;
+
+            return [{ accessToken, refreshToken }, payload.aud as string];
         } catch (error) {
-            console.log('repo');
             if (error.name == errorConstants.JWT_TOKENEXPIREDERROR) {
-                console.log('access token expired');
+                console.log("Access token expired");
                 // if error is thrown here, the refresh token expired, 
                 // or the refresh token cookie does not match the one in session document
                 // or something bad happened, in any case the user needs to sign in again
                 const payload = await this.jwtHelper.verifyRefreshToken(refreshToken) as JwtPayload;
-                console.log(payload);
                 if (payload.aud) {
                     const userId = payload.aud as string;
                     const userObj = await this.getUserInfo(userId);
@@ -38,30 +37,33 @@ class AuthRepository {
                             if (sessions[0].refreshToken == refreshToken) {
                                 const newAccessToken = await this.jwtHelper.signAccessToken(userObj);
 
-                                return { accessToken: newAccessToken, refreshToken };
+                                return [{ accessToken: newAccessToken, refreshToken }, userId];
                             }
                             else {
+                                console.log(3);
                                 throw errorConstants.ERROR_NEEDS_SIGNIN;
                             }
                         }
                         else {
+                            console.log(4);
                             throw errorConstants.ERROR_NEEDS_SIGNIN;
                         }
                     }
                     else {
+                        console.log(5);
                         throw errorConstants.ERROR_NEEDS_SIGNIN;
                     }
                 }
                 else {
+                    console.log(6);
                     throw errorConstants.ERROR_NEEDS_SIGNIN;
                 }
             }
             else {
+                console.log(7);
                 throw errorConstants.ERROR_NEEDS_SIGNIN;
             }
         }
-
-        return { accessToken, refreshToken };
     }
 
     async getUserInfo(userId: string, projection?: any): Promise<IUser | null> {
@@ -69,18 +71,18 @@ class AuthRepository {
     }
 
     private async getSessionsByUserId(userId: string): Promise<ISession[]> {
-        const sessions = await Session.find({ user: userId}, { _id: 1, refreshToken: 1 });
+        const sessions = await Session.find({ user: userId }, { _id: 1, refreshToken: 1 });
         // only one session
-        if(sessions.length > 1) {
+        if (sessions.length > 1) {
             await this.deleteSessionsByUserId(userId);
-            return [];   
+            return [];
         }
-        
+
         return sessions;
     }
 
     private async deleteSessionsByUserId(userId: string): Promise<number | undefined> {
-        const session = await Session.remove({ user: userId});
+        const session = await Session.remove({ user: userId });
 
         return session.ok;
     }
