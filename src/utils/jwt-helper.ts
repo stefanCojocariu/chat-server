@@ -11,7 +11,7 @@ class JWTHelper {
     constructor() { }
 
     async signAccessToken(userObj: IUser): Promise<string> {
-        const payload = userObj._id;
+        const payload = userObj;
         const secret = process.env.ACCESS_TOKEN_SECRET;
         if (!secret) {
             throw error.JWT_NOSECRET;
@@ -40,7 +40,7 @@ class JWTHelper {
     }
 
     async verifyAccessToken(accessToken: string): Promise<string | JwtPayload> {
-        const secret = process.env.REFRESH_TOKEN_SECRET;
+        const secret = process.env.ACCESS_TOKEN_SECRET;
         if (!secret) {
             throw error.JWT_NOSECRET;
         }

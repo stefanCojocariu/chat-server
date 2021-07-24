@@ -19,20 +19,35 @@ class AuthRepository {
         try {
             await this.jwtHelper.verifyAccessToken(accessToken) as JwtPayload;
         } catch (error) {
+            console.log(error);
             if (error.name == error.JWT_TOKENEXPIREDERROR) {
                 // if error is thrown here, the refresh token expired, 
                 // or the refresh token cookie does not match the one in session document
                 // or something bad happened, in any case the user needs to sign in again
                 const payload = await this.jwtHelper.verifyRefreshToken(refreshToken) as JwtPayload;
-                const userObj = new User({ _id: payload.aud });
-                await this.getRefreshTokenByUserId(userObj);
-                const newAccessToken = await this.jwtHelper.signAccessToken(userObj);
-
-                return { accessToken: newAccessToken, refreshToken };
+                if (payload.aud) {
+                    const userObj = await this.getUserInfo(payload.aud as string);
+                    if (userObj) {
+                        await this.getRefreshTokenByUserId(userObj);
+                        const newAccessToken = await this.jwtHelper.signAccessToken(userObj);
+                
+                        return { accessToken: newAccessToken, refreshToken };
+                    }
+                    else {
+                        throw error.SERVER_ERROR;
+                    }
+                }
+                else {
+                    throw error.SERVER_ERROR;
+                }
             }
         }
 
         return { accessToken, refreshToken };
+    }
+
+    async getUserInfo(userId: string, projection?: any): Promise<IUser | null> {
+        return await User.findById(userId, projection);
     }
 
     private async getRefreshTokenByUserId(userObj: IUser): Promise<string> {
@@ -117,6 +132,7 @@ class AuthRepository {
                     resolve(tokens);
 
                 } catch (error) {
+                    console.log(error);
                     reject(error);
                 }
             }

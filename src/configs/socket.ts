@@ -5,14 +5,17 @@ import ChatRepository from '../repositories/chat-repository';
 import ApiResponse from '../utils/api-response';
 import * as http from 'http';
 import error from '../configs/error.constants';
+import AuthRepository from '../repositories/auth-repository';
 
 class Socket {
     private io: socketio.Server;
+    private authRepository: AuthRepository;
     private chatRepository: ChatRepository;
     private apiResponse: ApiResponse;
 
     constructor(httpServer: http.Server) {
         this.io = new socketio.Server(httpServer, { cors: { origin: 'http://localhost:3000', credentials: true } });
+        this.authRepository = new AuthRepository();
         this.chatRepository = new ChatRepository();
         this.apiResponse = new ApiResponse();
     }
@@ -74,7 +77,7 @@ class Socket {
 
         try {
             const [userInfo, _] = await Promise.all([
-                this.chatRepository.getUserInfo(data.to.toString(), { socketId: 1 }),
+                this.authRepository.getUserInfo(data.to.toString(), { socketId: 1 }),
                 this.chatRepository.insertMessage(data)
             ]);
             if (userInfo && userInfo.socketId) {

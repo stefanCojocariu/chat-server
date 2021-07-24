@@ -1,5 +1,4 @@
-import { Request, Response } from 'express';
-import { isBuffer } from 'util';
+import { NextFunction, Request, Response } from 'express';
 import User, { IUser } from '../models/user';
 import AuthRepository from '../repositories/auth-repository';
 import ApiResponse from '../utils/api-response';
@@ -21,6 +20,21 @@ class AuthHandler {
     constructor() {
         this.authRepository = new AuthRepository();
         this.apiResponse = new ApiResponse();
+    }
+
+    async authorization(req: Request, res: Response, next: NextFunction) {
+        const accessToken = req.cookies.access_token;
+        const refreshToken = req.cookies.refresh_token;
+        try {
+            const tokens = await this.authRepository.authorization(accessToken, refreshToken);
+
+            res.cookie("access_token", tokens.accessToken, this.accessToken_cookieOptions);
+            res.cookie("refresh_token", tokens.refreshToken, this.refreshToken_cookieOptions);
+            next();
+        } catch (error) {
+            console.log(error);
+            res.status(500).json(this.apiResponse.format(null, error));
+        }
     }
 
     async register(req: Request, res: Response) {

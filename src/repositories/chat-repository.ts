@@ -20,10 +20,6 @@ class ChatRepository {
         return await Message.findById({ conversationId });
     }
 
-    async getUserInfo(userId: string, projection: any): Promise<IUser | null> {
-        return await User.findById(userId, projection);
-    }
-
     async addSocket(userId: string | string[], socketId: string): Promise<IUser | null> {
         return await User.findByIdAndUpdate(userId, { socketId });
     }
