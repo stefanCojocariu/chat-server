@@ -14,14 +14,14 @@ class AuthHandler {
         this.authRepository = new AuthRepository();
         this.apiResponse = new ApiResponse();
         this.accessToken_cookieOptions = {
-            expiresIn: process.env.ACCESS_TOKEN_EXPIRESIN,
-            httpOnly: true,
-            secure: true
+            expiresIn: process.env.ACCESS_TOKEN_EXPIRESIN
+            // httpOnly: true,
+            // secure: true
         };
         this.refreshToken_cookieOptions = {
-            expiresIn: process.env.REFRESH_TOKEN_EXPIRESIN,
-            httpOnly: true,
-            secure: true
+            expiresIn: process.env.REFRESH_TOKEN_EXPIRESIN
+            // httpOnly: true,
+            // secure: true
         }
     }
 
@@ -49,9 +49,21 @@ class AuthHandler {
     }
 
     async logout(req: Request, res: Response) {
-        //check refreshToken
-        //delete session
-        //clear cookies
+        console.log('COOKIES',req.cookies);
+        let cookies = req.cookies.refresh_token
+
+        // if(!cookies){
+        //     throw 'already logged out'
+        // }
+        try{
+            // await this.authRepository.logout(refreshTokenCookie);
+            // console.log('clearing cookies')
+            // res.clearCookie('access_token');
+            // res.clearCookie('refresh_token');
+            res.status(200).json(this.apiResponse.format(cookies));
+        }catch (error){
+            res.status(500).json(this.apiResponse.format(null, error));
+        }
     }
 
     async refreshAccessToken(req: Request, res: Response) {
