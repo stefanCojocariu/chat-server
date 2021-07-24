@@ -11,21 +11,25 @@ class JWTHelper {
     constructor() { }
 
     async signAccessToken(userObj: IUser): Promise<string> {
-        const payload = userObj;
+        const payload = {
+            username: userObj.username
+        };
         const secret = process.env.ACCESS_TOKEN_SECRET;
         if (!secret) {
             throw errorConstants.JWT_NOSECRET;
         }
         const signOptions = {
             expiresIn: process.env.ACCESS_TOKEN_EXPIRESIN,
-            audience: userObj.username
+            audience: userObj._id.toString()
         };
 
         return JWT.sign(payload, secret, signOptions);
     }
 
     async signRefreshToken(userObj: IUser): Promise<string> {
-        const payload = userObj;
+        const payload = {
+            username: userObj.username
+        };
         const secret = process.env.REFRESH_TOKEN_SECRET;
         if (!secret) {
             throw errorConstants.JWT_NOSECRET;
@@ -33,7 +37,7 @@ class JWTHelper {
         //!!!!! WILL BE ALWAYS THE SAME - EPIRES IN SHOW TAKE CURRENT DATE + env variable
         const signOptions = {
             expiresIn: process.env.REFRESH_TOKEN_EXPIRESIN,
-            audience: userObj.username
+            audience: userObj._id.toString()
         };
 
         return JWT.sign(payload, secret, signOptions);

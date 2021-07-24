@@ -6,9 +6,8 @@ const error = {
     SERVER_ERROR: 'Error occurred on the server.',
     AUTHORIZATION_ERROR: 'Error in authorizing.',
     JWT_NOSECRET: 'No JWT secret.',
-    SESSION_NOT_FOUND: 'Session not found.',
     JWT_TOKENEXPIREDERROR: 'TokenExpiredError',
-    ERROR_NEEDS_SIGNIN: 'NeedsSignin' 
+    ERROR_NEEDS_SIGNIN: 'NeedsSignin',
 };
 
 export default error;

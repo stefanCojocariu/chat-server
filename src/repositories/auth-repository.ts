@@ -5,6 +5,7 @@ import JWTHelper, { Tokens } from '../utils/jwt-helper'
 import Session, { ISession } from '../models/session'
 import { JwtPayload } from "jsonwebtoken";
 import errorConstants from "../configs/error.constants";
+import mongoose from "mongoose";
 
 class AuthRepository {
     private validators: Validators;
@@ -15,6 +16,7 @@ class AuthRepository {
     }
 
     async authorization(accessToken: string, refreshToken: string): Promise<Tokens> {
+        console.log(accessToken, refreshToken);
         // trycatch to verify if access token expired
         try {
             await this.jwtHelper.verifyAccessToken(accessToken) as JwtPayload;
@@ -26,13 +28,25 @@ class AuthRepository {
                 // or the refresh token cookie does not match the one in session document
                 // or something bad happened, in any case the user needs to sign in again
                 const payload = await this.jwtHelper.verifyRefreshToken(refreshToken) as JwtPayload;
+                console.log(payload);
                 if (payload.aud) {
-                    const userObj = await this.getUserInfo(payload.aud as string);
+                    const userId = payload.aud as string;
+                    const userObj = await this.getUserInfo(userId);
                     if (userObj) {
-                        await this.getRefreshTokenByUserId(userObj);
-                        const newAccessToken = await this.jwtHelper.signAccessToken(userObj);
-                
-                        return { accessToken: newAccessToken, refreshToken };
+                        const sessions = await this.getSessionsByUserId(userId);
+                        if (sessions.length) {
+                            if (sessions[0].refreshToken == refreshToken) {
+                                const newAccessToken = await this.jwtHelper.signAccessToken(userObj);
+
+                                return { accessToken: newAccessToken, refreshToken };
+                            }
+                            else {
+                                throw errorConstants.ERROR_NEEDS_SIGNIN;
+                            }
+                        }
+                        else {
+                            throw errorConstants.ERROR_NEEDS_SIGNIN;
+                        }
                     }
                     else {
                         throw errorConstants.ERROR_NEEDS_SIGNIN;
@@ -54,13 +68,21 @@ class AuthRepository {
         return await User.findById(userId, projection);
     }
 
-    private async getRefreshTokenByUserId(userObj: IUser): Promise<string> {
-        const session: ISession[] = await Session.find({ _id: userObj._id }, { refreshToken: 1 })
-        if (!session.length) {
-            throw errorConstants.SESSION_NOT_FOUND
+    private async getSessionsByUserId(userId: string): Promise<ISession[]> {
+        const sessions = await Session.find({ user: userId}, { _id: 1, refreshToken: 1 });
+        // only one session
+        if(sessions.length > 1) {
+            await this.deleteSessionsByUserId(userId);
+            return [];   
         }
+        
+        return sessions;
+    }
 
-        return session[0].refreshToken;
+    private async deleteSessionsByUserId(userId: string): Promise<number | undefined> {
+        const session = await Session.remove({ user: userId});
+
+        return session.ok;
     }
 
     private generateNewTokens(userObj: IUser): Promise<Tokens> {
@@ -122,17 +144,26 @@ class AuthRepository {
                         return;
                     }
 
+                    userObj._id = users[0]._id;
                     //generate AccessToken / RefreshToken
                     const tokens = await this.generateNewTokens(userObj);
-                    //insert new session for user
-                    const newSession = await Session.create(
-                        {
-                            user: users[0]._id,
-                            refreshToken: tokens.refreshToken,
-                        }
-                    );
-                    const session = await newSession.save();
-                    console.log(session);
+
+                    // check to see if the user has already a session
+                    const session = await this.getSessionsByUserId(users[0]._id.toString());
+                    if (session.length) {
+                        // if session exists then update refresh token
+                        await Session.updateOne({ _id: session[0]._id }, { refreshToken: tokens.refreshToken });
+                    }
+                    else {
+                        // if session does not exist create one
+                        const newSession = await Session.create(
+                            {
+                                user: users[0]._id.toString(),
+                                refreshToken: tokens.refreshToken,
+                            }
+                        );
+                        await newSession.save();
+                    }
                     resolve(tokens);
 
                 } catch (error) {
