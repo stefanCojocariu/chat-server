@@ -34,12 +34,15 @@ class AuthRepository {
                         return { accessToken: newAccessToken, refreshToken };
                     }
                     else {
-                        throw error.SERVER_ERROR;
+                        throw error.ERROR_NEEDS_SIGNIN;
                     }
                 }
                 else {
-                    throw error.SERVER_ERROR;
+                    throw error.ERROR_NEEDS_SIGNIN;
                 }
+            }
+            else {
+                throw error.ERROR_NEEDS_SIGNIN;
             }
         }
 
