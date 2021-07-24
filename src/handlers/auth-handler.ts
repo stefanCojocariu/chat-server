@@ -12,7 +12,7 @@ class AuthHandler {
         httpOnly: true,
         secure: true
     };
-    private refreshToken_cookieOptions: Object = {
+    private readonly refreshToken_cookieOptions: Object = {
         expiresIn: process.env.REFRESH_TOKEN_EXPIRESIN,
         httpOnly: true,
         secure: true

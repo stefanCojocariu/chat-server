@@ -1,10 +1,10 @@
-import { AnyNaptrRecord } from "dns";
-import MongoDB from "../configs/mongo-db";
 import User, { IUser } from "../models/user";
 import bcrypt from 'bcrypt';
 import Validators from '../utils/validators';
 import JWTHelper, { Tokens } from '../utils/jwt-helper'
 import Session, { ISession } from '../models/session'
+import { JwtPayload } from "jsonwebtoken";
+import error from "../configs/error.constants";
 
 class AuthRepository {
     private validators: Validators;
@@ -13,7 +13,37 @@ class AuthRepository {
         this.validators = new Validators();
         this.jwtHelper = new JWTHelper();
     }
-    authorization() { }
+
+    async authorization(accessToken: string, refreshToken: string): Promise<Tokens> {
+        // trycatch to verify if access token expired
+        try {
+            await this.jwtHelper.verifyAccessToken(accessToken) as JwtPayload;
+        } catch (error) {
+            if (error.name == error.JWT_TOKENEXPIREDERROR) {
+                // if error is thrown here, the refresh token expired, 
+                // or the refresh token cookie does not match the one in session document
+                // or something bad happened, in any case the user needs to sign in again
+                const payload = await this.jwtHelper.verifyRefreshToken(refreshToken) as JwtPayload;
+                const userObj = new User({ _id: payload.aud });
+                await this.getRefreshTokenByUserId(userObj);
+                const newAccessToken = await this.jwtHelper.signAccessToken(userObj);
+
+                return { accessToken: newAccessToken, refreshToken };
+            }
+        }
+
+        return { accessToken, refreshToken };
+    }
+
+    private async getRefreshTokenByUserId(userObj: IUser): Promise<string> {
+        const session: ISession[] = await Session.find({ _id: userObj._id }, { refreshToken: 1 })
+        if (!session.length) {
+            throw error.SESSION_NOT_FOUND
+        }
+
+        return session[0].refreshToken;
+    }
+
     private generateNewTokens(userObj: IUser): Promise<Tokens> {
         return new Promise(
             async (resolve, reject) => {
@@ -28,24 +58,8 @@ class AuthRepository {
                 }
             }
         )
-     }
-    private getRefreshTokenByUserId(userObj:IUser) : Promise<string> {
-        let func = async (resolve:any, reject:any) => {
-            try{
-                const session:ISession[] = await Session.find({user: userObj._id})
-                if(!session){
-                    reject ('No session found');
-                    return;
-                }
-
-                resolve(session[0].refreshToken)
-            }catch(error){
-                reject(error)
-            }
-        }
-
-        return new Promise<string>(func);
     }
+
     register(userObj: IUser): Promise<IUser> {
         return new Promise(
             async (resolve, reject) => {

@@ -11,7 +11,7 @@ class JWTHelper {
     constructor() { }
 
     async signAccessToken(userObj: IUser): Promise<string> {
-        const payload = userObj;
+        const payload = userObj._id;
         const secret = process.env.ACCESS_TOKEN_SECRET;
         if (!secret) {
             throw error.JWT_NOSECRET;
@@ -21,7 +21,7 @@ class JWTHelper {
             audience: userObj.username
         };
 
-        return await JWT.sign(payload, secret, signOptions);
+        return JWT.sign(payload, secret, signOptions);
     }
 
     async signRefreshToken(userObj: IUser): Promise<string> {
@@ -36,7 +36,7 @@ class JWTHelper {
             audience: userObj.username
         };
 
-        return await JWT.sign(payload, secret, signOptions);
+        return JWT.sign(payload, secret, signOptions);
     }
 
     async verifyAccessToken(accessToken: string): Promise<string | JwtPayload> {
@@ -44,7 +44,7 @@ class JWTHelper {
         if (!secret) {
             throw error.JWT_NOSECRET;
         }
-        return await JWT.verify(accessToken, secret);
+        return JWT.verify(accessToken, secret);
     }
 
     async verifyRefreshToken(refreshToken: string): Promise<string | JwtPayload> {
@@ -52,7 +52,7 @@ class JWTHelper {
         if (!secret) {
             throw error.JWT_NOSECRET;
         }
-        return await JWT.verify(refreshToken, secret)
+        return JWT.verify(refreshToken, secret)
     }
 }
 
