@@ -1,24 +1,18 @@
-import { Server } from 'socket.io';
+import * as socketio from 'socket.io';
+import cookie from 'cookie';
 import { IMessage } from '../models/message';
 import ChatRepository from '../repositories/chat-repository';
 import ApiResponse from '../utils/api-response';
-
-interface ISocket extends Socket {
-}
+import * as http from 'http';
+import error from '../configs/error.constants';
 
 class Socket {
-    private readonly USER_NOT_FOUND = 'User id is missing.';
-    private readonly MESSAGE_NOT_FOUND = 'Message can not be empty.';
-    private readonly FROMID_NOT_FOUND = 'From id can not be empty.';
-    private readonly TOID_NOT_FOUND = 'To id can not be empty.';
-    private readonly SERVER_ERROR = 'Error occurred on the server.';
-
-    private io: Server;
+    private io: socketio.Server;
     private chatRepository: ChatRepository;
     private apiResponse: ApiResponse;
 
-    constructor(socket: Server) {
-        this.io = socket;
+    constructor(httpServer: http.Server) {
+        this.io = new socketio.Server(httpServer, { cors: { origin: 'http://localhost:3000', credentials: true } });
         this.chatRepository = new ChatRepository();
         this.apiResponse = new ApiResponse();
     }
@@ -26,14 +20,24 @@ class Socket {
     include() {
         this.io.use(async (socket, next) => {
             try {
-                if (socket.handshake.query['userId']?.length) {
-                    await this.chatRepository.addSocket(
-                        socket.handshake.query['userId'],
-                        socket.id
-                    );
+                const cookies = socket.request.headers.cookie;
+                if (cookies) {
+                    const parsedCookies = cookie.parse(cookies);
+                    console.log('access_token');
+                    console.log(parsedCookies.access_token);
+                    console.log('refresh_token');
+                    console.log(parsedCookies.refresh_token);
+                    if (socket.handshake.query['userId']?.length) {
+                        await this.chatRepository.addSocket(
+                            socket.handshake.query['userId'],
+                            socket.id
+                        );
+                    }
+                    next();
                 }
-
-                next();
+                else {
+                    next(new Error(error.AUTHORIZATION_ERROR));
+                }
             } catch (error) {
                 console.error(error);
             }
@@ -49,21 +53,21 @@ class Socket {
         if (data.body === '') {
             this.io.to(socketId).emit('add-message-response', {
                 isSuccess: true,
-                message: this.MESSAGE_NOT_FOUND
+                message: error.MESSAGE_NOT_FOUND
             });
             return;
         }
         if (data.from.toString() === '') {
             this.io.to(socketId).emit('add-message-response', {
                 isSuccess: true,
-                message: this.FROMID_NOT_FOUND
+                message: error.FROMID_NOT_FOUND
             });
             return;
         }
         if (data.to.toString() === '') {
             this.io.to(socketId).emit('add-message-response', {
                 isSuccess: true,
-                message: this.TOID_NOT_FOUND
+                message: error.TOID_NOT_FOUND
             });
             return;
         }
@@ -80,13 +84,13 @@ class Socket {
             else {
                 this.io.to(socketId).emit('add-message-response', {
                     isSuccess: false,
-                    message: this.SERVER_ERROR
+                    message: error.SERVER_ERROR
                 });
             }
         } catch (error) {
             this.io.to(socketId).emit('add-message-response', {
                 isSuccess: false,
-                message: this.SERVER_ERROR
+                message: error.SERVER_ERROR
             });
         }
     }

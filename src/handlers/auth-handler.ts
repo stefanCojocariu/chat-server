@@ -7,22 +7,20 @@ import ApiResponse from '../utils/api-response';
 class AuthHandler {
     private authRepository: AuthRepository;
     private apiResponse: ApiResponse;
-    private accessToken_cookieOptions: Object;
-    private refreshToken_cookieOptions: Object;
+    private readonly accessToken_cookieOptions: Object = {
+        expiresIn: process.env.ACCESS_TOKEN_EXPIRESIN,
+        httpOnly: true,
+        secure: true
+    };
+    private refreshToken_cookieOptions: Object = {
+        expiresIn: process.env.REFRESH_TOKEN_EXPIRESIN,
+        httpOnly: true,
+        secure: true
+    };
 
     constructor() {
         this.authRepository = new AuthRepository();
         this.apiResponse = new ApiResponse();
-        this.accessToken_cookieOptions = {
-            expiresIn: process.env.ACCESS_TOKEN_EXPIRESIN,
-            httpOnly: true,
-            secure: true
-        };
-        this.refreshToken_cookieOptions = {
-            expiresIn: process.env.REFRESH_TOKEN_EXPIRESIN,
-            httpOnly: true,
-            secure: true
-        }
     }
 
     async register(req: Request, res: Response) {
