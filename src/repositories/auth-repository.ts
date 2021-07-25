@@ -14,7 +14,19 @@ class AuthRepository {
         this.validators = new Validators();
         this.jwtHelper = new JWTHelper();
     }
-    authorization() { }
+    
+     authorization = async (req, res, next) => {
+        let accessTokenCookie = req.cookies.access_token;
+
+        try {
+            const payload = await JWT_HELPER.verifyAccessToken(accessTokenCookie);
+            req.payload = payload;
+
+            next();
+        } catch (err) {
+            return;
+        }
+    };
     private generateNewTokens(userObj: IUser): Promise<Tokens> {
         return new Promise(
             async (resolve, reject) => {
