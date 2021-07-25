@@ -30,6 +30,6 @@ export default class Routes {
         });
 
         this.app.use(`${this.apiUrl}/auth`, this.auth.router);
-        this.app.use(`${this.apiUrl}/chat`, this.middleware.authorization, this.chat.router);
+        this.app.use(`${this.apiUrl}/chat`, this.middleware.authorization.bind(this.middleware), this.chat.router);
     }
 }

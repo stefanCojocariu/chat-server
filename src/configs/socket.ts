@@ -39,7 +39,7 @@ class Socket {
                     next();
                 }
                 else {
-                    next(new Error(errorConstants.AUTHORIZATION_ERROR));
+                    next(new Error(errorConstants.server.AUTHORIZATION_ERROR));
                 }
             } catch (error) {
                 console.error(error);
@@ -56,21 +56,21 @@ class Socket {
         if (data.body === '') {
             this.io.to(socketId).emit('add-message-response', {
                 isSuccess: true,
-                message: errorConstants.MESSAGE_NOT_FOUND
+                message: errorConstants.client.MESSAGE_NOT_FOUND
             });
             return;
         }
         if (data.from.toString() === '') {
             this.io.to(socketId).emit('add-message-response', {
                 isSuccess: true,
-                message: errorConstants.FROMID_NOT_FOUND
+                message: errorConstants.server.FROMID_NOT_FOUND
             });
             return;
         }
         if (data.to.toString() === '') {
             this.io.to(socketId).emit('add-message-response', {
                 isSuccess: true,
-                message: errorConstants.TOID_NOT_FOUND
+                message: errorConstants.server.TOID_NOT_FOUND
             });
             return;
         }
@@ -87,13 +87,13 @@ class Socket {
             else {
                 this.io.to(socketId).emit('add-message-response', {
                     isSuccess: false,
-                    message: errorConstants.SERVER_ERROR
+                    message: errorConstants.client.SERVER_ERROR
                 });
             }
         } catch (error) {
             this.io.to(socketId).emit('add-message-response', {
                 isSuccess: false,
-                message: errorConstants.SERVER_ERROR
+                message: errorConstants.client.SERVER_ERROR
             });
         }
     }
