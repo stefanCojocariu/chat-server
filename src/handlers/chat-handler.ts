@@ -13,6 +13,10 @@ class ChatHandler {
         this.apiResponse = new ApiResponse();
     }
 
+    async checkSession(req: Request, res: Response) {
+        res.status(200).json(this.apiResponse.format(1));
+    }
+
     async insertConversation(req: Request, res: Response) {
         const members = req.body.members;
         if (members) {

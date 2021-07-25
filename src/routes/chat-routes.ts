@@ -11,6 +11,10 @@ export default class ChatRoutes {
     }
 
     include(): void {
+        this.router.get('/checkSession', (req: Request, res: Response) => {
+            this.chatHandler.checkSession(req, res);
+        });
+
         this.router.post('/insertConversation', (req: Request, res: Response) => { 
             this.chatHandler.insertConversation(req, res);
         });
