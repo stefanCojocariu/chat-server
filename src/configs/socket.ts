@@ -4,7 +4,7 @@ import { IMessage } from '../models/message';
 import ChatRepository from '../repositories/chat-repository';
 import ApiResponse from '../utils/api-response';
 import * as http from 'http';
-import errorConstants from '../configs/error.constants';
+import errorConstants from '../utils/error.constants';
 import AuthRepository from '../repositories/auth-repository';
 
 class Socket {
