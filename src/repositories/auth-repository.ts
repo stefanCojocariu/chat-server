@@ -4,7 +4,7 @@ import Validators from '../utils/validators';
 import JWTHelper, { Tokens } from '../utils/jwt-helper'
 import Session, { ISession } from '../models/session'
 import { JwtPayload } from "jsonwebtoken";
-import errorConstants from "../configs/error.constants";
+import errorConstants from "../utils/error.constants";
 import mongoose from "mongoose";
 
 class AuthRepository {

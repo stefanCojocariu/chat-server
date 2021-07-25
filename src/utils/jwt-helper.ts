@@ -1,6 +1,6 @@
 import { IUser } from "../models/user";
 import JWT, { JwtPayload } from 'jsonwebtoken';
-import errorConstants from '../configs/error.constants';
+import errorConstants from './error.constants';
 
 export interface Tokens {
     accessToken: string,
