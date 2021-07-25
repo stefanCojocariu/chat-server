@@ -19,6 +19,10 @@ export default class AuthRoutes {
             this.authHandler.login(req, res); 
         });
 
+        this.router.post('/logout', (req: Request, res: Response) => { 
+            this.authHandler.logout(req, res); 
+        });
+
         this.router.get('/getUsers', (req: Request, res: Response) => { 
             this.authHandler.getUsers(req, res);
         });

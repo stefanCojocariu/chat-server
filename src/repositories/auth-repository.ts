@@ -176,6 +176,29 @@ class AuthRepository {
         )
     }
 
+    async logout(refreshTokenCookie: string){
+        try{
+            const decoded = await this.jwtHelper.verifyRefreshToken(refreshTokenCookie) as JwtPayload;
+            console.log('decoded', decoded)
+            const userId = decoded.aud as string;
+            const sessionDetails = await this.getSessionsByUserId(userId);
+            console.log('sessionDetails', sessionDetails)
+
+            if( sessionDetails.length != 1 ){
+                throw 'no session or more than 1';
+            }
+
+            if(refreshTokenCookie == sessionDetails[0]._id){
+                await Session.deleteOne({_id: sessionDetails[0]._id});
+            }else{
+                throw 'already logged out'
+            }
+
+        }catch(error){
+            throw error;
+        }
+    }
+
     getUsers(): Promise<IUser[]> {
         return new Promise(
             async (resolve, reject) => {
