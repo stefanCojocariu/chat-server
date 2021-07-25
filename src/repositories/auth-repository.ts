@@ -22,7 +22,7 @@ class AuthRepository {
 
             return [{ accessToken, refreshToken }, payload.aud as string];
         } catch (error) {
-            if (error.name == errorConstants.JWT_TOKENEXPIREDERROR) {
+            if (error.name == errorConstants.server.JWT_TOKENEXPIREDERROR) {
                 console.log("Access token expired");
                 // if error is thrown here, the refresh token expired, 
                 // or the refresh token cookie does not match the one in session document
@@ -41,27 +41,27 @@ class AuthRepository {
                             }
                             else {
                                 console.log(3);
-                                throw errorConstants.ERROR_NEEDS_SIGNIN;
+                                throw errorConstants.server.ERROR_NEEDS_SIGNIN;
                             }
                         }
                         else {
                             console.log(4);
-                            throw errorConstants.ERROR_NEEDS_SIGNIN;
+                            throw errorConstants.server.ERROR_NEEDS_SIGNIN;
                         }
                     }
                     else {
                         console.log(5);
-                        throw errorConstants.ERROR_NEEDS_SIGNIN;
+                        throw errorConstants.server.ERROR_NEEDS_SIGNIN;
                     }
                 }
                 else {
                     console.log(6);
-                    throw errorConstants.ERROR_NEEDS_SIGNIN;
+                    throw errorConstants.server.ERROR_NEEDS_SIGNIN;
                 }
             }
             else {
                 console.log(7);
-                throw errorConstants.ERROR_NEEDS_SIGNIN;
+                throw errorConstants.server.ERROR_NEEDS_SIGNIN;
             }
         }
     }
