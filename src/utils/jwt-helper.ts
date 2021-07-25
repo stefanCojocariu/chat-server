@@ -58,24 +58,6 @@ class JWTHelper {
         }
         return JWT.verify(refreshToken, secret)
     }
-
-    verifyRefreshToken(refreshToken: string) : Promise<any>{
-        return new Promise(
-            async (resolve, reject) => {
-                try{
-                    const secret = process.env.REFRESH_TOKEN_SECRET;
-                    if (!secret) {
-                        reject('no jwt secret');
-                        return;
-                    }
-                    const decoded = await JWT.verify(refreshToken, secret);
-                    resolve(decoded);
-                } catch (error) {
-                    reject(error);
-                }
-            }
-        )
-    }
 }
 
 export default JWTHelper;
