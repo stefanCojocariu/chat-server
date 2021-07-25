@@ -2,15 +2,13 @@ import moongose, { ObjectId } from 'mongoose';
 const Schema = moongose.Schema;
 
 export interface ISession extends moongose.Document {
-    user: ObjectId,
+    user: string | ObjectId,
     refreshToken: string,
     date: string
 };
 
 const SessionSchema = new Schema({
-    user: {
-        type:{ type: Schema.Types.ObjectId, ref: 'User' }
-    },
+    user: { type: Schema.Types.ObjectId, ref: 'User' },
     refreshToken: {
         type: String,
     },

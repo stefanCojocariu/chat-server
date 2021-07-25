@@ -1,5 +1,4 @@
-import { Request, Response } from 'express';
-import { isBuffer } from 'util';
+import { NextFunction, Request, Response } from 'express';
 import User, { IUser } from '../models/user';
 import AuthRepository from '../repositories/auth-repository';
 import ApiResponse from '../utils/api-response';
@@ -7,21 +6,36 @@ import ApiResponse from '../utils/api-response';
 class AuthHandler {
     private authRepository: AuthRepository;
     private apiResponse: ApiResponse;
-    private accessToken_cookieOptions: Object;
-    private refreshToken_cookieOptions: Object;
+    private readonly accessToken_cookieOptions: Object = {
+        expiresIn: process.env.ACCESS_TOKEN_EXPIRESIN,
+        httpOnly: true,
+        secure: true
+    };
+    private readonly refreshToken_cookieOptions: Object = {
+        expiresIn: process.env.REFRESH_TOKEN_EXPIRESIN,
+        httpOnly: true,
+        secure: true
+    };
 
     constructor() {
         this.authRepository = new AuthRepository();
         this.apiResponse = new ApiResponse();
-        this.accessToken_cookieOptions = {
-            expiresIn: process.env.ACCESS_TOKEN_EXPIRESIN
-            // httpOnly: true,
-            // secure: true
-        };
-        this.refreshToken_cookieOptions = {
-            expiresIn: process.env.REFRESH_TOKEN_EXPIRESIN
-            // httpOnly: true,
-            // secure: true
+    }
+    
+    async authorization(req: Request, res: Response, next: NextFunction) {
+        const accessToken = req.cookies.access_token;
+        const refreshToken = req.cookies.refresh_token;
+        try {
+            const [tokens, _] = await this.authRepository.authorization(accessToken, refreshToken);
+
+            res.cookie("access_token", tokens.accessToken, this.accessToken_cookieOptions);
+            res.cookie("refresh_token", tokens.refreshToken, this.refreshToken_cookieOptions);
+            next();
+        } catch (error) {
+            res.clearCookie("access_token");
+            res.clearCookie("refresh_token");
+            console.log(error);
+            res.status(200).json(this.apiResponse.format(null, error));
         }
     }
 
@@ -32,7 +46,7 @@ class AuthHandler {
             res.status(200).json(this.apiResponse.format(user));
         } catch (error) {
             console.log(error);
-            res.status(500).json(this.apiResponse.format(null, error));
+            res.status(200).json(this.apiResponse.format(null, error));
         }
     }
 
@@ -44,7 +58,7 @@ class AuthHandler {
             res.cookie("refresh_token", tokens.refreshToken, this.refreshToken_cookieOptions);
             res.status(200).json(this.apiResponse.format('OK'));
         } catch (error) {
-            res.status(500).json(this.apiResponse.format(null, error));
+            res.status(200).json(this.apiResponse.format(null, error));
         }
     }
 
@@ -78,7 +92,7 @@ class AuthHandler {
             res.status(200).json(this.apiResponse.format(users));
         } catch (error) {
             console.log(error);
-            res.status(500).json(this.apiResponse.format(null, error));
+            res.status(200).json(this.apiResponse.format(null, error));
         }
     }
 }
