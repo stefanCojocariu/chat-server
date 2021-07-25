@@ -2,41 +2,16 @@ import { NextFunction, Request, Response } from 'express';
 import User, { IUser } from '../models/user';
 import AuthRepository from '../repositories/auth-repository';
 import ApiResponse from '../utils/api-response';
+import cookieOptions from '../utils/cookie.constants';
 
 class AuthHandler {
     private authRepository: AuthRepository;
     private apiResponse: ApiResponse;
-    private readonly accessToken_cookieOptions: Object = {
-        expiresIn: process.env.ACCESS_TOKEN_EXPIRESIN,
-        httpOnly: true,
-        secure: true
-    };
-    private readonly refreshToken_cookieOptions: Object = {
-        expiresIn: process.env.REFRESH_TOKEN_EXPIRESIN,
-        httpOnly: true,
-        secure: true
-    };
+    private readonly cookieOptions = cookieOptions;
 
     constructor() {
         this.authRepository = new AuthRepository();
         this.apiResponse = new ApiResponse();
-    }
-    
-    async authorization(req: Request, res: Response, next: NextFunction) {
-        const accessToken = req.cookies.access_token;
-        const refreshToken = req.cookies.refresh_token;
-        try {
-            const [tokens, _] = await this.authRepository.authorization(accessToken, refreshToken);
-
-            res.cookie("access_token", tokens.accessToken, this.accessToken_cookieOptions);
-            res.cookie("refresh_token", tokens.refreshToken, this.refreshToken_cookieOptions);
-            next();
-        } catch (error) {
-            res.clearCookie("access_token");
-            res.clearCookie("refresh_token");
-            console.log(error);
-            res.status(200).json(this.apiResponse.format(null, error));
-        }
     }
 
     async register(req: Request, res: Response) {
@@ -54,9 +29,9 @@ class AuthHandler {
         const userObj: IUser = req.body;
         try {
             const tokens = await this.authRepository.login(userObj);
-            res.cookie("access_token", tokens.accessToken, this.accessToken_cookieOptions);
-            res.cookie("refresh_token", tokens.refreshToken, this.refreshToken_cookieOptions);
-            res.status(200).json(this.apiResponse.format('OK'));
+            res.cookie("access_token", tokens.accessToken, this.cookieOptions.accessToken);
+            res.cookie("refresh_token", tokens.refreshToken, this.cookieOptions.refreshToken);
+            res.status(200).json(this.apiResponse.format(null));
         } catch (error) {
             res.status(200).json(this.apiResponse.format(null, error));
         }
@@ -64,26 +39,17 @@ class AuthHandler {
 
     async logout(req: Request, res: Response) {
         console.log('COOKIES',req.cookies);
-        let cookies = req.cookies.refresh_token
+        let refreshToken = req.cookies.refresh_token
 
-        // if(!cookies){
-        //     throw 'already logged out'
-        // }
         try{
-            // await this.authRepository.logout(refreshTokenCookie);
-            // console.log('clearing cookies')
-            // res.clearCookie('access_token');
-            // res.clearCookie('refresh_token');
-            res.status(200).json(this.apiResponse.format(cookies));
+            await this.authRepository.logout(refreshToken);
+            console.log('clearing cookies')
+            res.clearCookie('access_token');
+            res.clearCookie('refresh_token');
+            res.status(200).json(this.apiResponse.format(null));
         }catch (error){
-            res.status(500).json(this.apiResponse.format(null, error));
+            res.status(200).json(this.apiResponse.format(null, error));
         }
-    }
-
-    
-
-    async refreshAccessToken(req: Request, res: Response) {
-
     }
 
     async getUsers(req: Request, res: Response) {

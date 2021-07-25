@@ -16,7 +16,7 @@ class JWTHelper {
         };
         const secret = process.env.ACCESS_TOKEN_SECRET;
         if (!secret) {
-            throw errorConstants.JWT_NOSECRET;
+            throw errorConstants.server.JWT_NOSECRET;
         }
         const signOptions = {
             expiresIn: process.env.ACCESS_TOKEN_EXPIRESIN,
@@ -32,7 +32,7 @@ class JWTHelper {
         };
         const secret = process.env.REFRESH_TOKEN_SECRET;
         if (!secret) {
-            throw errorConstants.JWT_NOSECRET;
+            throw errorConstants.server.JWT_NOSECRET;
         }
         //!!!!! WILL BE ALWAYS THE SAME - EPIRES IN SHOW TAKE CURRENT DATE + env variable
         const signOptions = {
@@ -46,7 +46,7 @@ class JWTHelper {
     async verifyAccessToken(accessToken: string): Promise<string | JwtPayload> {
         const secret = process.env.ACCESS_TOKEN_SECRET;
         if (!secret) {
-            throw errorConstants.JWT_NOSECRET;
+            throw errorConstants.server.JWT_NOSECRET;
         }
         return JWT.verify(accessToken, secret);
     }
@@ -54,7 +54,7 @@ class JWTHelper {
     async verifyRefreshToken(refreshToken: string): Promise<string | JwtPayload> {
         const secret = process.env.REFRESH_TOKEN_SECRET;
         if (!secret) {
-            throw errorConstants.JWT_NOSECRET;
+            throw errorConstants.server.JWT_NOSECRET;
         }
         return JWT.verify(refreshToken, secret)
     }

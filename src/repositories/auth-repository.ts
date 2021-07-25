@@ -87,130 +87,79 @@ class AuthRepository {
         return session.ok;
     }
 
-    private generateNewTokens(userObj: IUser): Promise<Tokens> {
-        return new Promise(
-            async (resolve, reject) => {
-                try {
-                    const accessToken = await this.jwtHelper.signAccessToken(userObj);
-                    const refreshToken = await this.jwtHelper.signRefreshToken(userObj);
+    private async generateNewTokens(userObj: IUser): Promise<Tokens> {
+        const accessToken = await this.jwtHelper.signAccessToken(userObj);
+        const refreshToken = await this.jwtHelper.signRefreshToken(userObj);
 
-                    resolve({ accessToken: accessToken, refreshToken: refreshToken });
-                }
-                catch (err) {
-                    reject(err);
-                }
-            }
-        )
+        return { accessToken: accessToken, refreshToken: refreshToken };
     }
 
-    register(userObj: IUser): Promise<IUser> {
-        return new Promise(
-            async (resolve, reject) => {
-                try {
-                    //encrypt password
-                    const saltRounds = 3;
-                    const passHash = await bcrypt.hash(userObj.password, saltRounds);
-                    userObj.password = passHash;
-                    const newUser = await User.create(userObj);
+    async register(userObj: IUser): Promise<IUser> {
 
-                    const user = await newUser.save();
+        //encrypt password
+        const saltRounds = 3;
+        const passHash = await bcrypt.hash(userObj.password, saltRounds);
+        userObj.password = passHash;
+        const newUser = await User.create(userObj);
 
-                    resolve(user);
-                } catch (error) {
-                    reject(error);
-                }
-            }
-        );
+        const user = await newUser.save();
+
+        return user;
+
     }
 
-    login(userObj: IUser): Promise<Tokens> {
-        return new Promise(
-            async (resolve, reject) => {
-                try {
-                    //check user/pass combination
-                    const users = await User.find({ username: userObj.username });
-                    if (!users) {
-                        reject('Username / Email or Password is invalid');
-                        return;
-                    }
-
-                    if (users.length != 1) {
-                        reject('Bad boo boo');
-                        return;
-                    }
-
-                    const hashPass = users[0].password;
-                    var compare = await bcrypt.compare(userObj.password, hashPass);
-                    if (!compare) {
-                        reject('Username / Email or Password is invalid');
-                        return;
-                    }
-
-                    userObj._id = users[0]._id;
-                    //generate AccessToken / RefreshToken
-                    const tokens = await this.generateNewTokens(userObj);
-
-                    // check to see if the user has already a session
-                    const session = await this.getSessionsByUserId(users[0]._id.toString());
-                    if (session.length) {
-                        // if session exists then update refresh token
-                        await Session.updateOne({ _id: session[0]._id }, { refreshToken: tokens.refreshToken });
-                    }
-                    else {
-                        // if session does not exist create one
-                        const newSession = await Session.create(
-                            {
-                                user: users[0]._id.toString(),
-                                refreshToken: tokens.refreshToken,
-                            }
-                        );
-                        await newSession.save();
-                    }
-                    resolve(tokens);
-
-                } catch (error) {
-                    console.log(error);
-                    reject(error);
-                }
-            }
-        )
-    }
-
-    async logout(refreshTokenCookie: string){
-        try{
-            const decoded = await this.jwtHelper.verifyRefreshToken(refreshTokenCookie) as JwtPayload;
-            console.log('decoded', decoded)
-            const userId = decoded.aud as string;
-            const sessionDetails = await this.getSessionsByUserId(userId);
-            console.log('sessionDetails', sessionDetails)
-
-            if( sessionDetails.length != 1 ){
-                throw 'no session or more than 1';
-            }
-
-            if(refreshTokenCookie == sessionDetails[0]._id){
-                await Session.deleteOne({_id: sessionDetails[0]._id});
-            }else{
-                throw 'already logged out'
-            }
-
-        }catch(error){
-            throw error;
+    async login(userObj: IUser): Promise<Tokens> {
+        //check user/pass combination
+        const users = await User.find({ username: userObj.username });
+        if (!users) {
+            throw errorConstants.client.INCORRECT_CREDENTIALS;
         }
+
+        if (users.length != 1) {
+            throw errorConstants.client.SERVER_ERROR;
+        }
+
+        const hashPass = users[0].password;
+        var compare = await bcrypt.compare(userObj.password, hashPass);
+        if (!compare) {
+            throw errorConstants.client.INCORRECT_CREDENTIALS;
+        }
+
+        userObj._id = users[0]._id;
+        //generate AccessToken / RefreshToken
+        const tokens = await this.generateNewTokens(userObj);
+
+        // check to see if the user has already a session
+        const session = await this.getSessionsByUserId(users[0]._id.toString());
+        if (session.length) {
+            // if session exists then update refresh token
+            await Session.updateOne({ _id: session[0]._id }, { refreshToken: tokens.refreshToken });
+        }
+        else {
+            // if session does not exist create one
+            const newSession = await Session.create(
+                {
+                    user: users[0]._id.toString(),
+                    refreshToken: tokens.refreshToken,
+                }
+            );
+            await newSession.save();
+        }
+        return tokens;
     }
 
-    getUsers(): Promise<IUser[]> {
-        return new Promise(
-            async (resolve, reject) => {
-                try {
-                    const users = await User.find();
+    async logout(refreshToken: string) {
+        const decoded = await this.jwtHelper.verifyRefreshToken(refreshToken) as JwtPayload;
+        console.log('decoded', decoded)
+        const userId = decoded.aud as string;
+        const sessionDetails = await this.getSessionsByUserId(userId);
+        console.log('sessionDetails', sessionDetails);
 
-                    resolve(users);
-                } catch (error) {
-                    reject(error);
-                }
-            }
-        );
+        await Session.deleteOne({ _id: sessionDetails[0]._id });
+    }
+
+    async getUsers(): Promise<IUser[]> {
+        return await User.find();
     }
 }
 
